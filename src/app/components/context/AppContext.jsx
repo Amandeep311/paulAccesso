@@ -88,7 +88,6 @@ export const AppProvider = ({ children }) => {
     }
   }, [darkMode]);
 
-
   // Fetch data when token or user role changes
   useEffect(() => {
     if (token && user) {
@@ -166,18 +165,19 @@ export const AppProvider = ({ children }) => {
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch(`${API_BASE}/users/employees`);
-      if (response.ok) {
-        const data = await response.json();
-        setEmployees(data);
-      } else {
-        const errorData = await response.json();
-        console.error("Failed to fetch employees:", errorData);
-      }
+        const response = await fetch(`${API_BASE}/users/employees`);
+        if (response.ok) {
+            const data = await response.json();
+            // Make sure data includes empId field
+            setEmployees(data);
+        } else {
+            const errorData = await response.json();
+            console.error("Failed to fetch employees:", errorData);
+        }
     } catch (error) {
-      console.error("Failed to fetch employees:", error);
+        console.error("Failed to fetch employees:", error);
     }
-  };
+};
 
   const fetchUsers = async () => {
     if (!token || user?.role !== "ADMIN") return;
@@ -206,13 +206,13 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  const sendOtp = async (email) => {
+  const sendOtp = async (empId) => {
     setLoading(true);
     try {
       const response = await fetch(`${API_BASE}/auth/send-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ empId }),
       });
 
       const data = await response.json();
@@ -224,12 +224,15 @@ export const AppProvider = ({ children }) => {
         });
         return true;
       } else {
-        // Handle different error scenarios
         let errorMessage = data.message || "Failed to send OTP";
 
         if (response.status === 400) {
-          if (data.message === "User not found") {
-            errorMessage = "User not found. Please check your email.";
+          if (
+            data.message &&
+            data.message.includes("User not found with EmpId")
+          ) {
+            errorMessage =
+              "Employee ID not found. Please check your Employee ID.";
           } else if (
             data.message ===
             "Access denied. Only admin and receptionist can login."
@@ -258,13 +261,13 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  const verifyOtp = async (email, otp) => {
+  const verifyOtp = async (empId, otp) => {
     setLoading(true);
     try {
       const response = await fetch(`${API_BASE}/auth/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp }),
+        body: JSON.stringify({ empId, otp }),
       });
 
       const data = await response.json();
@@ -647,7 +650,7 @@ export const AppProvider = ({ children }) => {
       value={{
         darkMode,
         toggleDarkMode,
-              isAuthInitialized,
+        isAuthInitialized,
         token,
         user,
         visitors,

@@ -27,24 +27,24 @@ export function RootLayout() {
     logout,
     sendOtp,
     verifyOtp,
-    loading, // Rename this to avoid conflict with appLoading
+    loading,
     isAuthInitialized,
-    token // Add token here - this was missing!
+    token,
   } = useApp();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [showLogin, setShowLogin] = useState(!user);
-  const [email, setEmail] = useState("");
+  const [empId, setEmpId] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   const navItems = [
     { path: "/", icon: Home, label: "Dashboard" },
     { path: "/register", icon: UserPlus, label: "Register Visitor" },
     { path: "/log", icon: ClipboardList, label: "Visitor Log" },
   ];
 
-  // Then your existing logic
   useEffect(() => {
     setShowLogin(!user);
     if (user) {
@@ -54,22 +54,21 @@ export function RootLayout() {
     }
   }, [user, navigate, location.pathname]);
 
-  // Close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
 
   const handleSendOtp = async () => {
-    if (await sendOtp(email)) {
+    if (await sendOtp(empId)) {
       setOtpSent(true);
     }
   };
 
   const handleVerifyOtp = async () => {
-    if (await verifyOtp(email, otp)) {
+    if (await verifyOtp(empId, otp)) {
       setShowLogin(false);
       setOtpSent(false);
-      setEmail("");
+      setEmpId("");
       setOtp("");
     }
   };
@@ -80,7 +79,6 @@ export function RootLayout() {
     navigate("/");
   };
 
-  // Show loading screen while checking auth
   if (!isAuthInitialized) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
@@ -91,7 +89,6 @@ export function RootLayout() {
       </div>
     );
   }
-
 
   if (user?.role === "ADMIN") {
     navItems.push({ path: "/admin", icon: Users, label: "Admin Panel" });
@@ -115,22 +112,22 @@ export function RootLayout() {
               Paul Accesso
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-2">
-              Login with your email
+              Login with your Employee ID
             </p>
           </div>
 
           {!otpSent ? (
             <>
               <input
-                type="email"
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="text"
+                placeholder="Employee ID (e.g., F023, E6955, R007)"
+                value={empId}
+                onChange={(e) => setEmpId(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg mb-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
               <Button
                 onClick={handleSendOtp}
-                disabled={loading || !email}
+                disabled={loading || !empId}
                 className="w-full"
               >
                 {loading ? "Sending..." : "Send OTP"}
@@ -139,7 +136,7 @@ export function RootLayout() {
           ) : (
             <>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                OTP sent to {email}
+                OTP sent to employee ID: {empId}
               </p>
               <input
                 type="text"
@@ -159,7 +156,7 @@ export function RootLayout() {
                 onClick={() => setOtpSent(false)}
                 className="w-full text-sm text-blue-600 dark:text-blue-400 mt-3"
               >
-                Back to email
+                Back to Employee ID
               </button>
             </>
           )}
@@ -174,7 +171,6 @@ export function RootLayout() {
         <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
             <div className="flex items-center justify-between">
-              {/* Logo and Title - Always visible */}
               <div
                 className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition"
                 onClick={() => navigate("/")}
@@ -197,7 +193,6 @@ export function RootLayout() {
                 </div>
               </div>
 
-              {/* Desktop Navigation - Hidden on mobile */}
               <div className="hidden md:flex items-center gap-2">
                 <button
                   onClick={toggleDarkMode}
@@ -223,7 +218,6 @@ export function RootLayout() {
                 </button>
               </div>
 
-              {/* Mobile Menu Button */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -236,13 +230,11 @@ export function RootLayout() {
               </button>
             </div>
 
-            {/* Mobile Welcome Text */}
             <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 md:hidden">
               Welcome, {user?.name || user?.email}
               {user?.designation && ` (${user.designation})`}
             </p>
 
-            {/* Desktop Navigation Links */}
             <nav className="hidden md:flex flex-wrap gap-2 mt-4">
               {navItems.map((item) => {
                 const isActive = location.pathname === item.path;
@@ -265,21 +257,20 @@ export function RootLayout() {
               })}
             </nav>
 
-            {/* Mobile Menu Drawer */}
             {mobileMenuOpen && (
               <div className="md:hidden fixed inset-x-0 top-[72px] bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-lg z-40">
                 <div className="px-4 py-3 space-y-2">
-                  {/* Navigation Links */}
                   {navItems.map((item) => {
                     const isActive = location.pathname === item.path;
                     return (
                       <Link key={item.path} to={item.path}>
                         <Button
                           variant={isActive ? "default" : "ghost"}
-                          className={`w-full justify-start ${isActive
-                            ? "bg-gradient-to-r from-blue-600 to-cyan-600 text-white"
-                            : "text-gray-700 dark:text-gray-300"
-                            }`}
+                          className={`w-full justify-start ${
+                            isActive
+                              ? "bg-gradient-to-r from-blue-600 to-cyan-600 text-white"
+                              : "text-gray-700 dark:text-gray-300"
+                          }`}
                         >
                           <item.icon className="w-4 h-4 mr-2" />
                           {item.label}
@@ -289,7 +280,6 @@ export function RootLayout() {
                   })}
 
                   <div className="border-t border-gray-200 dark:border-gray-700 my-2 pt-2">
-                    {/* Dark Mode Toggle */}
                     <Button
                       variant="ghost"
                       onClick={toggleDarkMode}
@@ -303,7 +293,6 @@ export function RootLayout() {
                       {darkMode ? "Light Mode" : "Dark Mode"}
                     </Button>
 
-                    {/* Settings */}
                     <Button
                       variant="ghost"
                       onClick={() => {
@@ -316,7 +305,6 @@ export function RootLayout() {
                       Settings
                     </Button>
 
-                    {/* Logout */}
                     <Button
                       variant="ghost"
                       onClick={() => {
@@ -349,7 +337,6 @@ export function RootLayout() {
         />
       </div>
 
-      {/* Logout Confirmation Modal */}
       {showLogoutConfirm && (
         <>
           <div
