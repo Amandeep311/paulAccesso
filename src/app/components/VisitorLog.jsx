@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router";
 import {
   Card,
   CardContent,
@@ -49,6 +50,7 @@ import {
 import { useApp } from "./context/AppContext";
 
 export function VisitorLog() {
+  const location = useLocation();
   const {
     visitors,
     checkoutVisitor,
@@ -93,6 +95,13 @@ export function VisitorLog() {
     status: "all",
   });
   const [selectedFormat, setSelectedFormat] = useState("csv");
+
+  // Refresh visitors whenever the log page is opened or reached by navigation.
+  useEffect(() => {
+    if (token && fetchVisitors) {
+      fetchVisitors();
+    }
+  }, [location.key, token]);
 
   // Handle image click to open preview
   const handleImageClick = (imageUrl, title) => {

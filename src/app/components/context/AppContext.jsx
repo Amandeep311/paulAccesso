@@ -661,6 +661,7 @@ export const AppProvider = ({ children }) => {
         sendOtp,
         verifyOtp,
         registerVisitor,
+        fetchVisitors,
         checkoutVisitor,
         createUser,
         updateUser,
